@@ -5,7 +5,6 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from myproject import config
 from myproject import common, ordering_food
 
-dp = Dispatcher()
 
 async def main():
     logging.basicConfig(

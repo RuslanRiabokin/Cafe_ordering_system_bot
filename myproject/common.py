@@ -53,8 +53,3 @@ async def cmd_cancel(message: Message, state: FSMContext):
     )
 
 
-@router.message()
-async def echo(message: types.Message):
-    """Обработчик всех остальных сообщений. Отправляет эхо-ответ с именем и ID пользователя."""
-    await message.answer(f'Привет, {message.from_user.first_name}, твой номер id: {message.from_user.id}')
-    await message.answer(f'Привет, введите команду (/start)')
