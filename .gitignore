@@ -1,4 +1,3 @@
 /.idea
 /projectenv/
 .env
-*.db

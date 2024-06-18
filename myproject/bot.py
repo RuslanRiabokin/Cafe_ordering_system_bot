@@ -3,9 +3,10 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from myproject import config
-from myproject import common, ordering_food
+from myproject import common, ordering_food, database
 
 
+database.create_db()
 async def main():
     logging.basicConfig(
         level=logging.INFO,
