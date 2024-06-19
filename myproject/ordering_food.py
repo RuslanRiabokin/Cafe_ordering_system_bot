@@ -11,7 +11,7 @@ router = Router()
 
 available_food_names = ["Суши", "Спагетти", "Хачапури"]
 available_food_sizes = ["Маленькую", "Среднюю", "Большую"]
-menu_names = ["Первые блюда", "Гарниры", "Основные блюда", "Напитки"]
+menu_names = ["Закуски", "Перщі страви", "Основні страви", "Напої"]
 
 
 class OrderFood(StatesGroup):
@@ -35,7 +35,7 @@ async def cmd_food(message: Message, state: FSMContext):
         await state.set_state(OrderFood.menu_names)
 
 
-@router.message(F.text.startswith("Стол №"))
+@router.message(F.text.startswith("Стіл №"))
 async def table_selected(message: Message, state: FSMContext):
     table = message.text
     await state.update_data(table_selected=table)
