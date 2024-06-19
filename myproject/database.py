@@ -1,18 +1,17 @@
 import sqlite3
 
 def create_db():
-    # Определение пути к базе данных
+    # Визначення шляху до бази даних
     db_path = 'database.db'
 
-    # Подключение к базе данных
+    # Підключення до бази даних
     conn = sqlite3.connect(db_path)
     print(f"Connecting to the database: {db_path}")
 
-
-    # Создание курсора
+    # Створення курсора
     cursor = conn.cursor()
 
-    # Создание таблицы "Меню"
+    # Створення таблиці "Меню"
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS Menu (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,7 +21,7 @@ def create_db():
     )
     ''')
 
-    # Создание таблицы "Столики"
+    # Створення таблиці "Столики"
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS Tables (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,7 +29,7 @@ def create_db():
     )
     ''')
 
-    # Создание таблицы "Заказы"
+    # Створення таблиці "Замовлення"
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS Orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -41,7 +40,7 @@ def create_db():
     )
     ''')
 
-    # Создание таблицы "Меню заказа"
+    # Створення таблиці "Меню замовлення"
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS OrderMenu (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -52,9 +51,21 @@ def create_db():
     )
     ''')
 
-    # Сохранение изменений
+    # Збереження змін
     conn.commit()
 
-    # Закрытие соединения
+    # Вставка столиків від "Стіл 1" до "Стіл 9" тільки якщо їх немає в таблиці
+    table_names = [f'Стіл {i}' for i in range(1, 10)]
+    for name in table_names:
+        cursor.execute('SELECT COUNT(*) FROM Tables WHERE table_name = ?', (name,))
+        if cursor.fetchone()[0] == 0:
+            cursor.execute('INSERT INTO Tables (table_name) VALUES (?)', (name,))
+
+    # Збереження змін
+    conn.commit()
+
+    # Закриття з'єднання
     conn.close()
 
+# Виклик функції створення бази даних
+create_db()
