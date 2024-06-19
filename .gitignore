@@ -1,4 +1,5 @@
 /.idea
 /projectenv/
 .env
-*.db
+/__pycache__/
+*.pyc
