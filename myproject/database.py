@@ -88,3 +88,8 @@ class Database():
         # Збереження змін
         self.connection.commit()
 
+    def get_table_names(self):
+        self.cursor.execute("SELECT table_name FROM Tables")
+        rows = self.cursor.fetchall() # Отримання всіх рядків результату запиту
+        self.connection.close()
+        return [row[0] for row in rows]
