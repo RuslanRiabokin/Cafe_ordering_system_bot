@@ -88,6 +88,3 @@ class Database():
         # Збереження змін
         self.connection.commit()
 
-# Виклик функції створення бази даних
-db = Database()
-db.create_db()
