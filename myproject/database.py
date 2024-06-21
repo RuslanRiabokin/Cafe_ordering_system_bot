@@ -65,7 +65,7 @@ class Database():
         menu_items = [
                 ('Хліб', 5.0, 'Закуски'),
                 ('Салат', 15.0, 'Закуски'),
-                ('Суп', 25.0, 'Перщі страви'),
+                ('Суп', 25.0, 'Перші страви'),
                 ('Піца', 50.0, 'Основні страви'),
                 ('Чай', 10.0, 'Напої'),
                 ('Кава', 15.0, 'Напої')
@@ -89,7 +89,18 @@ class Database():
         self.connection.commit()
 
     def get_table_names(self):
+        """Отримуємо дані з Tables з столбця table_name"""
         self.cursor.execute("SELECT table_name FROM Tables")
         rows = self.cursor.fetchall() # Отримання всіх рядків результату запиту
-        self.connection.close()
         return [row[0] for row in rows]
+
+
+    def getting_data_from_menu(self):
+        """Отримуємо дані з Menu з столбця dish_name"""
+
+
+    def get_name_menu_categories(self):
+        """Отримуємо з таблиці Menu назву категорій"""
+        self.cursor.execute("SELECT DISTINCT category FROM Menu")
+        rows = self.cursor.fetchall()
+        return [row[0] for row in rows] # ['Закуски', 'Перші страви', 'Основні страви', 'Напої']

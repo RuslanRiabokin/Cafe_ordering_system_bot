@@ -5,13 +5,14 @@ from aiogram.fsm.state import StatesGroup, State
 from aiogram.types import Message, ReplyKeyboardRemove
 from myproject.simple_row import make_row_keyboard
 from myproject.common import cmd_start
+from myproject.database import Database
 
 
 router = Router()
 
 available_food_names = ["Суши", "Спагетти", "Хачапури"]
 available_food_sizes = ["Маленькую", "Среднюю", "Большую"]
-menu_names = ["Закуски", "Перщі страви", "Основні страви", "Напої"]
+menu_names = Database().get_name_menu_categories()
 
 
 class OrderFood(StatesGroup):
