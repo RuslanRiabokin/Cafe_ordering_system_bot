@@ -3,10 +3,13 @@ from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state
 from aiogram.types import Message, ReplyKeyboardRemove
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from myproject.tableKeyboard import TableKeyboard
+from myproject.database import Database
 
 router = Router()
 
+# Ініціалізуємо об'єкт класу з зазначенням шляху до бази даних
+table_keyboard = TableKeyboard()
 
 @router.message(Command(commands=["start"]))
 async def cmd_start(message: types.Message, state: FSMContext):
@@ -14,16 +17,17 @@ async def cmd_start(message: types.Message, state: FSMContext):
     await state.clear()
 
     # Створюємо клавіатуру з кнопками вибору столиків
-    builder = ReplyKeyboardBuilder()
-    for i in range(1, 10):
-        builder.add(types.KeyboardButton(text=f"Стіл № {i}"))
-    builder.adjust(3)
+    keyboard = table_keyboard.create_keyboard(table_names=Database().get_table_names())
 
-    # Відправляємо повідомлення з клавіатурою
+
+    # Надсилаємо повідомлення з клавіатурою
     await message.answer(
         text="Виберіть столик, натиснувши на кнопку з номером столика",
-        reply_markup=builder.as_markup(resize_keyboard=True)
+        reply_markup=keyboard
     )
+
+
+
 
 
 
