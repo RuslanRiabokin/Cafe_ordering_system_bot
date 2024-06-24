@@ -10,15 +10,15 @@ from myproject.database import Database
 
 router = Router()
 
-available_food_names = ["Суши", "Спагетти", "Хачапури"]
-available_food_sizes = ["Маленькую", "Среднюю", "Большую"]
 menu_names = Database().get_name_menu_categories()
 
 
+
 class OrderFood(StatesGroup):
-    menu_names = State()
-    choosing_food_name = State()
-    choosing_food_size = State()
+    """Замовлення їжі"""
+    choosing_menu_names = State()
+    choosing_menu_types = State()
+
 
 
 @router.message(Command("menu"))
@@ -33,7 +33,7 @@ async def cmd_food(message: Message, state: FSMContext):
             reply_markup=make_row_keyboard(menu_names)
         )
         # Устанавливаем пользователю состояние "выбирает название"
-        await state.set_state(OrderFood.menu_names)
+        await state.set_state(OrderFood.choosing_menu_names)
 
 
 @router.message(F.text.startswith("Стіл №"))
@@ -41,66 +41,24 @@ async def table_selected(message: Message, state: FSMContext):
     table = message.text
     await state.update_data(table_selected=table)
     await message.answer(f"Вы выбрали {table}. Теперь можете выбрать вариант меню, введя команду /menu.")
-    await state.set_state(OrderFood.menu_names)
+    await state.set_state(OrderFood.choosing_menu_names)
 
 
-
-
-@router.message(Command("food"))
-async def cmd_food(message: Message, state: FSMContext):
+@router.message(OrderFood.choosing_menu_names, F.text.in_(menu_names))
+async def food_size_menu(message: Message, state: FSMContext):
+    """Функція меню"""
+    user_choice = message.text  # Отримуємо вибір користувача з тексту повідомлення
+    menu_types = Database().getting_data_from_menu(user_choice)
     await message.answer(
-        text="Выберите блюдо:",
-        reply_markup=make_row_keyboard(available_food_names)
-    )
-    # Устанавливаем пользователю состояние "выбирает название"
-    await state.set_state(OrderFood.choosing_food_name)
-
-# Этап выбора блюда #
-
-
-@router.message(OrderFood.choosing_food_name, F.text.in_(available_food_names))
-async def food_chosen(message: Message, state: FSMContext):
-    await state.update_data(chosen_food=message.text.lower())
-    await message.answer(
-        text="Спасибо. Теперь, пожалуйста, выберите размер порции:",
-        reply_markup=make_row_keyboard(available_food_sizes)
-    )
-    await state.set_state(OrderFood.choosing_food_size)
-
-
-# В целом, никто не мешает указывать стейты полностью строками
-# Это может пригодиться, если по какой-то причине
-# ваши названия стейтов генерируются в рантайме (но зачем?)
-@router.message(StateFilter("OrderFood:choosing_food_name"))
-async def food_chosen_incorrectly(message: Message):
-    await message.answer(
-        text="Я не знаю такого блюда.\n\n"
-             "Пожалуйста, выберите одно из названий из списка ниже:",
-        reply_markup=make_row_keyboard(available_food_names)
-    )
-
-# Этап выбора размера порции и отображение сводной информации #
-
-
-@router.message(OrderFood.choosing_food_size, F.text.in_(available_food_sizes))
-async def food_size_chosen(message: Message, state: FSMContext):
-    user_data = await state.get_data()
-    await message.answer(
-        text=f"Вы выбрали {message.text.lower()} порцию {user_data['chosen_food']}.\n"
-             f"Попробуйте теперь заказать напитки: /drinks",
+        text=f"Вы выбрали {user_choice}.\n" 
+             f"Меню {user_choice}: {menu_types}",
         reply_markup=ReplyKeyboardRemove()
     )
     # Сброс состояния и сохранённых данных у пользователя
-    await state.clear()
 
 
-@router.message(OrderFood.choosing_food_size)
-async def food_size_chosen_incorrectly(message: Message):
-    await message.answer(
-        text="Я не знаю такого размера порции.\n\n"
-             "Пожалуйста, выберите один из вариантов из списка ниже:",
-        reply_markup=make_row_keyboard(available_food_sizes)
-    )
+
+
 
 
 @router.message()

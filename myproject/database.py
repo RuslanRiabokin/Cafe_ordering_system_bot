@@ -95,8 +95,12 @@ class Database():
         return [row[0] for row in rows]
 
 
-    def getting_data_from_menu(self):
+    def getting_data_from_menu(self, category):
         """Отримуємо дані з Menu з столбця dish_name"""
+
+        self.cursor.execute("SELECT dish_name, dish_price FROM Menu WHERE category = ?", (category,))
+        rows = self.cursor.fetchall()
+        return rows
 
 
     def get_name_menu_categories(self):
