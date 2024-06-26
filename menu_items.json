@@ -1,0 +1,39 @@
+[
+    {
+        "dish_name": "Хліб",
+        "dish_price": 5.0,
+        "category": "Закуски",
+        "description": "Свіжоспечений хліб"
+    },
+    {
+        "dish_name": "Салат",
+        "dish_price": 15.0,
+        "category": "Закуски",
+        "description": "Свіжий овочевий салат"
+    },
+    {
+        "dish_name": "Суп",
+        "dish_price": 25.0,
+        "category": "Перші страви",
+        "description": "Гарячий суп дня"
+    },
+    {
+        "dish_name": "Піца",
+        "dish_price": 50.0,
+        "category": "Основні страви",
+        "description": "Італійська піца з сиром"
+    },
+    {
+        "dish_name": "Чай",
+        "dish_price": 10.0,
+        "category": "Напої",
+        "description": "Чорний чай"
+    },
+    {
+        "dish_name": "Кава",
+        "dish_price": 15.0,
+        "category": "Напої",
+        "description": "Ароматна кава"
+    }
+
+]

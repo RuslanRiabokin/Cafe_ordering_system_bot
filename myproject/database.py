@@ -1,4 +1,5 @@
 import sqlite3
+import json
 
 
 class Database():
@@ -11,13 +12,14 @@ class Database():
 
     def create_db(self):
 
-        # Створення таблиці "Меню"
+        # Створення таблиці "Меню" з новим стовпчиком для опису
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS Menu (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             dish_name TEXT NOT NULL,
             dish_price REAL NOT NULL,
-            category TEXT NOT NULL
+            category TEXT NOT NULL,
+            description TEXT NOT NULL
         )
         ''')
 
@@ -61,15 +63,11 @@ class Database():
             if self.cursor.fetchone()[0] == 0:
                 self.cursor.execute('INSERT INTO Tables (table_name) VALUES (?)', (name,))
 
-        # Вставка нових страв у таблицю "Меню" тільки якщо вони ще не існують
-        menu_items = [
-                ('Хліб', 5.0, 'Закуски'),
-                ('Салат', 15.0, 'Закуски'),
-                ('Суп', 25.0, 'Перші страви'),
-                ('Піца', 50.0, 'Основні страви'),
-                ('Чай', 10.0, 'Напої'),
-                ('Кава', 15.0, 'Напої')
-            ]
+        # Чтение данных из файла JSON и сохранение их в переменной menu_items
+        json_file_path = 'menu_items.json'
+
+        with open(json_file_path, 'r', encoding='utf-8') as f:
+            menu_items = json.load(f)
 
         existing_dishes = set()
 
@@ -80,10 +78,11 @@ class Database():
 
         # Додавання нових страв, якщо їх немає в таблиці
         new_dishes = [
-            (name, price, category) for name, price, category in menu_items if name not in existing_dishes
-            ]
+            (item['dish_name'], item['dish_price'], item['category'], item['description'])
+            for item in menu_items if item['dish_name'] not in existing_dishes
+        ]
         if new_dishes:
-            self.cursor.executemany('INSERT INTO Menu (dish_name, dish_price, category) VALUES (?, ?, ?)', new_dishes)
+            self.cursor.executemany('INSERT INTO Menu (dish_name, dish_price, category, description) VALUES (?, ?, ?, ?)', new_dishes)
 
         # Збереження змін
         self.connection.commit()
@@ -98,7 +97,7 @@ class Database():
     def getting_data_from_menu(self, category):
         """Отримуємо дані з Menu з столбця dish_name"""
 
-        self.cursor.execute("SELECT dish_name, dish_price FROM Menu WHERE category = ?", (category,))
+        self.cursor.execute("SELECT dish_name, dish_price, description FROM Menu WHERE category = ?", (category,))
         rows = self.cursor.fetchall()
         return rows
 
@@ -108,3 +107,6 @@ class Database():
         self.cursor.execute("SELECT DISTINCT category FROM Menu")
         rows = self.cursor.fetchall()
         return [row[0] for row in rows] # ['Закуски', 'Перші страви', 'Основні страви', 'Напої']
+
+
+Database().create_db()
