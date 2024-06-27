@@ -49,7 +49,7 @@ async def food_size_menu(message: Message, state: FSMContext):
     """Функція меню"""
     user_choice = message.text  # Отримуємо вибір користувача з тексту повідомлення
     menu_types = Database().getting_data_from_menu(user_choice)
-    formatted_menu_types = [f"{name} ціна: {price} грн." for name, price in menu_types]
+    formatted_menu_types = [f"{name} ціна: {price} грн. {description}" for name, price, description in menu_types]
     await message.answer(
         text=f"Вы выбрали {user_choice}. Повернутись до /menu \n" 
              f"Меню {user_choice}: {', '.join(formatted_menu_types)}",
