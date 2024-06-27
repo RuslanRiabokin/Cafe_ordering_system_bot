@@ -109,4 +109,5 @@ class Database():
         return [row[0] for row in rows] # ['Закуски', 'Перші страви', 'Основні страви', 'Напої']
 
 
+
 Database().create_db()
