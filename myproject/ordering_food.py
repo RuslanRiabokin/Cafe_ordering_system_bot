@@ -6,6 +6,7 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from myproject.simple_row import make_row_keyboard
 from myproject.common import cmd_start
 from myproject.database import Database
+from myproject.menu_selection_callback import update_category_menu_fab
 
 
 router = Router()
@@ -48,16 +49,7 @@ async def table_selected(message: Message, state: FSMContext):
 async def food_size_menu(message: Message, state: FSMContext):
     """Функція меню"""
     user_choice = message.text  # Отримуємо вибір користувача з тексту повідомлення
-    menu_types = Database().getting_data_from_menu(user_choice)
-    formatted_menu_types = [f"{name} ціна: {price} грн. {description}" for name, price, description in menu_types]
-    await message.answer(
-        text=f"Вы выбрали {user_choice}. Повернутись до /menu \n" 
-             f"Меню {user_choice}: {', '.join(formatted_menu_types)}",
-        reply_markup=ReplyKeyboardRemove()
-    )
-
-
-
+    await update_category_menu_fab(message, user_choice)
 
 
 

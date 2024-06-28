@@ -12,8 +12,7 @@ from contextlib import suppress
 class MenuSelectionCallback(CallbackData, prefix="fabnum"):
     """Дає можливість вибрати з меню страви"""
     action: str
-    name: str
-    price: Optional[float] = None
+    id: int
 
 
 
@@ -24,10 +23,10 @@ def get_data_from_the_menu(category: str ):
 
     builder = InlineKeyboardBuilder()
 
-    for dish_name, dish_price in results:
+    for dish_id, dish_name, dish_price in results:
         builder.button(
             text=f"{dish_name} - {dish_price}",
-            callback_data=MenuSelectionCallback(action="select",  name="", price=None)
+            callback_data=MenuSelectionCallback(action="select", id=dish_id)
         )
 
 
@@ -37,9 +36,10 @@ def get_data_from_the_menu(category: str ):
     return builder.as_markup()
 
 
-async def update_num_text_fab(message: types.Message, new_value: int, category: str):
-    with suppress(TelegramBadRequest):
-        await message.edit_text(
-            f"Укажите блюдо: {new_value}",
-            reply_markup=get_data_from_the_menu(category)
-        )
+async def update_category_menu_fab(message: types.Message, category: str):
+    """Виводе меню по обраній категорії"""
+
+    await message.answer(
+        f"Оберіть блюдо:",
+        reply_markup=get_data_from_the_menu(category)
+    )

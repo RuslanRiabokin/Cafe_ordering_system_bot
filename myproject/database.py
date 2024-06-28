@@ -97,7 +97,7 @@ class Database():
     def getting_data_from_menu(self, category):
         """Отримуємо дані з Menu з столбця dish_name"""
 
-        self.cursor.execute("SELECT dish_name, dish_price, description FROM Menu WHERE category = ?", (category,))
+        self.cursor.execute("SELECT id, dish_name, dish_price FROM Menu WHERE category = ?", (category,))
         rows = self.cursor.fetchall()
         return rows
 
