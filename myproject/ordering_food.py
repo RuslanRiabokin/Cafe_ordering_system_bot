@@ -1,4 +1,4 @@
-from aiogram import Router, F, types
+from aiogram import Router, types, F
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
@@ -6,7 +6,8 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from myproject.simple_row import make_row_keyboard
 from myproject.common import cmd_start
 from myproject.database import Database
-from myproject.menu_selection_callback import update_category_menu_fab
+from myproject.menu_selection_callback import update_category_menu_fab, choice_of_dish, MenuSelectionCallback
+from aiogram.filters.callback_data import CallbackData
 
 
 router = Router()
@@ -52,6 +53,9 @@ async def food_size_menu(message: Message, state: FSMContext):
     await update_category_menu_fab(message, user_choice)
 
 
+@router.callback_query(MenuSelectionCallback.filter())
+async def handle_dish_callback(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback):
+    await choice_of_dish(callback_query, callback_data)
 
 
 @router.message()

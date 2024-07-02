@@ -101,6 +101,13 @@ class Database():
         rows = self.cursor.fetchall()
         return rows
 
+    def get_dish_details(self, dish_id: int):
+        # Виконання запиту
+        self.cursor.execute("SELECT dish_name, dish_price, description FROM Menu WHERE id = ?", (dish_id,))
+        result = self.cursor.fetchone()
+
+        return result
+
 
     def get_name_menu_categories(self):
         """Отримуємо з таблиці Menu назву категорій"""
