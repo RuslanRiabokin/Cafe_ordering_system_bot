@@ -1,4 +1,4 @@
-from aiogram import Router, F, types
+from aiogram import Router, types, F
 from aiogram.filters import Command, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
@@ -6,6 +6,8 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from myproject.simple_row import make_row_keyboard
 from myproject.common import cmd_start
 from myproject.database import Database
+from myproject.menu_selection_callback import update_category_menu_fab, choice_of_dish, MenuSelectionCallback
+from aiogram.filters.callback_data import CallbackData
 
 
 router = Router()
@@ -48,18 +50,13 @@ async def table_selected(message: Message, state: FSMContext):
 async def food_size_menu(message: Message, state: FSMContext):
     """Функція меню"""
     user_choice = message.text  # Отримуємо вибір користувача з тексту повідомлення
-    menu_types = Database().getting_data_from_menu(user_choice)
-    formatted_menu_types = [f"{name} ціна: {price} грн. {description}" for name, price, description in menu_types]
-    await message.answer(
-        text=f"Вы выбрали {user_choice}. Повернутись до /menu \n" 
-             f"Меню {user_choice}: {', '.join(formatted_menu_types)}",
-        reply_markup=ReplyKeyboardRemove()
-    )
+    await update_category_menu_fab(message, user_choice)
 
 
-
-
-
+@router.callback_query(MenuSelectionCallback.filter())
+async def handle_dish_callback(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback, state: FSMContext):
+    state_data = await state.get_data()
+    await choice_of_dish(callback_query, callback_data)
 
 
 @router.message()
