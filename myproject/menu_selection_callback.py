@@ -44,20 +44,11 @@ async def update_category_menu_fab(message: types.Message, category: str):
         reply_markup=get_data_from_the_menu(category)
     )
 
-# SELECT dish_name, dish_price, description FROM Menu WHERE id = 3;
-# Виклик меню, ціну та опис з таблиці SQL
 
 async def choice_of_dish(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback):
     """Вибір блюда з меню"""
     dish_details = Database().get_dish_details(callback_data.id)
     dish_name, dish_price, description = dish_details
-    await callback_query.message.answer(
-        f"Ви обрали: {dish_name}\n"
-        f"Ціна: {dish_price}\n"
-        f"Опис: {description}"
-    )
-    await callback_query.answer()
-
     # Створюємо клавіатуру з кнопками "Підтвердити" та "Повернутися до вибору страв"
     builder = InlineKeyboardBuilder()
     builder.button(
@@ -71,6 +62,9 @@ async def choice_of_dish(callback_query: types.CallbackQuery, callback_data: Men
 
     # Відправляємо повідомлення з клавіатурою
     await callback_query.message.answer(
-        "Оберіть подальшу дію:",
+        f"Ви обрали: {dish_name}\n"
+        f"Ціна: {dish_price}\n"
+        f"Опис: {description}",
         reply_markup=builder.as_markup()
     )
+    await callback_query.answer()

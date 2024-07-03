@@ -54,7 +54,8 @@ async def food_size_menu(message: Message, state: FSMContext):
 
 
 @router.callback_query(MenuSelectionCallback.filter())
-async def handle_dish_callback(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback):
+async def handle_dish_callback(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback, state: FSMContext):
+    state_data = await state.get_data()
     await choice_of_dish(callback_query, callback_data)
 
 
