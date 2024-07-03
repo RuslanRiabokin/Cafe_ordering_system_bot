@@ -53,6 +53,14 @@ async def food_size_menu(message: Message, state: FSMContext):
     await update_category_menu_fab(message, user_choice)
 
 
+@router.callback_query(MenuSelectionCallback.filter(F.action == "back_to_menu"))
+async def handle_back_to_menu(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback):
+    """Повернення до вибору страв"""
+    keyboard = make_row_keyboard(menu_names)
+    await callback_query.message.answer(f"Виберіть блюдо: ", reply_markup=keyboard)
+    await callback_query.answer()
+
+
 @router.callback_query(MenuSelectionCallback.filter())
 async def handle_dish_callback(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback, state: FSMContext):
     state_data = await state.get_data()
