@@ -47,18 +47,22 @@ async def table_selected(message: Message, state: FSMContext):
 
 
 @router.message(OrderFood.choosing_menu_names, F.text.in_(menu_names))
-async def food_size_menu(message: Message, state: FSMContext):
-    """Функція меню"""
+async def display_menu_by_category(message: Message, state: FSMContext):
+    state_data = await state.get_data()
+    state_data["category_selected"] = message.text
+    await state.update_data(state_data)
     user_choice = message.text  # Отримуємо вибір користувача з тексту повідомлення
     await update_category_menu_fab(message, user_choice)
 
 
+
 @router.callback_query(MenuSelectionCallback.filter(F.action == "back_to_menu"))
-async def handle_back_to_menu(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback):
+async def handle_back_to_menu(callback_query: types.CallbackQuery, state: FSMContext):
     """Повернення до вибору страв"""
-    keyboard = make_row_keyboard(menu_names)
-    await callback_query.message.answer(f"Виберіть блюдо: ", reply_markup=keyboard)
+    state_data = await state.get_data()
+    await update_category_menu_fab(callback_query.message, state_data["category_selected"])
     await callback_query.answer()
+
 
 
 @router.callback_query(MenuSelectionCallback.filter())
