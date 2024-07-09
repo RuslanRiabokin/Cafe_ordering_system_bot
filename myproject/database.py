@@ -1,5 +1,6 @@
 import sqlite3
 import json
+from datetime import datetime
 
 
 class Database():
@@ -103,7 +104,8 @@ class Database():
 
     def get_dish_details(self, dish_id: int):
         # Виконання запиту
-        self.cursor.execute("SELECT dish_name, dish_price, description FROM Menu WHERE id = ?", (dish_id,))
+        self.cursor.execute("SELECT dish_name, dish_price, description FROM Menu WHERE id = ?",
+                            (dish_id,))
         result = self.cursor.fetchone()
 
         return result
@@ -114,6 +116,31 @@ class Database():
         self.cursor.execute("SELECT DISTINCT category FROM Menu")
         rows = self.cursor.fetchall()
         return [row[0] for row in rows] # ['Закуски', 'Перші страви', 'Основні страви', 'Напої']
+
+    from datetime import datetime
+
+    def create_order(self, table_name: str):
+        """Створює нове замовлення"""
+
+        # Отримання table_id по table_name
+        self.cursor.execute("SELECT id FROM Tables WHERE table_name = ?",
+                            (table_name,))
+        table_id = self.cursor.fetchone()[0]
+
+        # Отримання поточної дати та часу
+        order_date_time = datetime.now().strftime("%d-%m-%Y %H:%M")
+
+        # Створення нового замовлення
+        self.cursor.execute("INSERT INTO Orders (table_id, order_date, total) VALUES (?, ?, ?)",
+                            (table_id, order_date_time, 0))
+        self.connection.commit()
+        return self.cursor.lastrowid
+
+    def confirm_selected_dish(self):
+        """Відправляє id страви"""
+        pass
+
+
 
 
 
