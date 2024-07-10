@@ -136,12 +136,15 @@ class Database():
         self.connection.commit()
         return self.cursor.lastrowid
 
-    def confirm_selected_dish(self):
-        """Відправляє id страви"""
-        pass
+    def confirm_selected_dish(self, order_id: int, dish_id: int):
+        """Відправляє id страви та додає її в OrderMenu"""
 
+        # Додавання вибраної страви в OrderMenu
+        self.cursor.execute("INSERT INTO OrderMenu (order_id, menu_id) VALUES (?, ?)",
+                            (order_id, dish_id))
 
-
+        # Збереження змін
+        self.connection.commit()
 
 
 Database().create_db()
