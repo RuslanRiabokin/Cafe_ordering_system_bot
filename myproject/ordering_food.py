@@ -64,17 +64,22 @@ async def handle_back_to_menu(callback_query: types.CallbackQuery, state: FSMCon
     await callback_query.answer()
 
 
-
 @router.callback_query(MenuSelectionCallback.filter(F.action == "confirm"))
 async def confirm_choice_dish(callback_query: types.CallbackQuery, state: FSMContext):
+    """Додає  блюда до замовлення"""
     state_data = await state.get_data()
-
-    # Створення замовлення та додавання його ID в стан
     db = Database()
     table_name = state_data["table_selected"]
-    order_id = db.create_order(table_name)
-    state_data["order_id"] = order_id
-    await state.update_data(state_data)
+
+    # Перевірка існуючого замовлення
+    order_id = state_data.get("order_id")
+    if not order_id:
+        order_id = db.get_order_by_table(table_name)
+        if not order_id:
+            # Якщо замовлення немає, створюємо нове
+            order_id = db.create_order(table_name)
+        state_data["order_id"] = order_id
+        await state.update_data(state_data)
 
     # Отримання ID страви з callback_data
     dish_id = int(callback_query.data.split(":")[2])

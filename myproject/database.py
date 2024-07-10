@@ -136,6 +136,17 @@ class Database():
         self.connection.commit()
         return self.cursor.lastrowid
 
+    def get_order_by_table(self, table_name: str):
+        """Отримання існуючого замовлення для заданого столика"""
+        self.cursor.execute('''
+        SELECT id FROM Orders 
+        WHERE table_id = (SELECT id FROM Tables WHERE table_name = ?)
+        AND total = 0
+        ''', (table_name,))
+        result = self.cursor.fetchone()
+        return result[0] if result else None
+
+
     def confirm_selected_dish(self, order_id: int, dish_id: int):
         """Відправляє id страви та додає її в OrderMenu"""
 
