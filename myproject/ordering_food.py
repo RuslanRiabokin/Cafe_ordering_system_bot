@@ -90,6 +90,34 @@ async def confirm_choice_dish(callback_query: types.CallbackQuery, state: FSMCon
     await callback_query.answer("Страву додано до замовлення!")
 
 
+@router.callback_query(MenuSelectionCallback.filter(F.action == "occupied"))
+async def displays_formed_order(callback_query: types.CallbackQuery, state: FSMContext):
+    """Виводить сформоване замовлення"""
+    state_data = await state.get_data()
+    db = Database()
+
+    # Перевірка існуючого замовлення
+    order_id = state_data.get("order_id")
+    if not order_id:
+        await callback_query.answer("Немає активних замовлень для цього столика.", show_alert=True)
+        return
+
+    # Отримання деталей замовлення та загальної суми
+    order_details, total_sum = db.view_order(order_id)
+
+    if not order_details:
+        await callback_query.answer("Немає доданих страв у замовленні.", show_alert=True)
+        return
+
+    order_message = "Список страв у замовленні:\n"
+    for dish_name, dish_price in order_details:
+        order_message += f"{dish_name}: {dish_price} грн\n"
+    order_message += f"\nЗагальна сума: {total_sum} грн"
+
+    await callback_query.message.answer(order_message)
+    await callback_query.answer()
+
+
 @router.callback_query(MenuSelectionCallback.filter())
 async def handle_dish_callback(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback, state: FSMContext):
     state_data = await state.get_data()

@@ -13,7 +13,7 @@ class Database():
 
     def create_db(self):
 
-        # Створення таблиці "Меню" з новим стовпчиком для опису
+        # Створення таблиці "Меню"
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS Menu (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,7 +28,8 @@ class Database():
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS Tables (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            table_name TEXT NOT NULL
+            table_name TEXT NOT NULL,
+            is_occupied BOOLEAN NOT NULL DEFAULT 0
         )
         ''')
 
@@ -157,5 +158,25 @@ class Database():
         # Збереження змін
         self.connection.commit()
 
+    def view_order(self, order_id: int):
+        """Виводе сформироване замовлення"""
+
+        # Виконання запиту для отримання страв замовлення
+        self.cursor.execute('''
+        SELECT Menu.dish_name, Menu.dish_price
+        FROM OrderMenu
+        JOIN Menu ON OrderMenu.menu_id = Menu.id
+        WHERE OrderMenu.order_id = ?
+        ''', (order_id,))
+
+        # Отримання результатів запиту
+        results = self.cursor.fetchall()
+
+        # Підрахунок загальної суми
+        total_sum = sum(dish_price for _, dish_price in results)
+
+        return results, total_sum
+
 
 Database().create_db()
+
