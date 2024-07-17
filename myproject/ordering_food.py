@@ -1,8 +1,8 @@
 from aiogram import Router, types, F
-from aiogram.filters import Command, StateFilter
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message, ReplyKeyboardRemove
+from aiogram.types import Message
 from myproject.simple_row import make_row_keyboard
 from myproject.common import cmd_start
 from myproject.database import Database
