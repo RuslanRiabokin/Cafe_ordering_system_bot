@@ -178,5 +178,19 @@ class Database():
         return results, total_sum
 
 
+    """def delete_order(self, order_id: int):
+        
+        self.cursor.execute("DELETE FROM Orders WHERE id = ?", (order_id,))
+        self.cursor.execute("DELETE FROM OrderMenu WHERE order_id = ?", (order_id,))
+        self.connection.commit()"""
+
+    def delete_order(self, order_id: int):
+        """Видаляє замовлення з бази даних"""
+        self.cursor.execute("DELETE FROM OrderMenu WHERE order_id = ?", (order_id,))
+        self.cursor.execute("DELETE FROM Orders WHERE id = ?", (order_id,))
+        self.connection.commit()
+
+
+
 Database().create_db()
 

@@ -7,7 +7,7 @@ from myproject.simple_row import make_row_keyboard
 from myproject.common import cmd_start
 from myproject.database import Database
 from myproject.menu_selection_callback import update_category_menu_fab, choice_of_dish, MenuSelectionCallback
-from aiogram.filters.callback_data import CallbackData
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
 router = Router()
@@ -114,8 +114,46 @@ async def displays_formed_order(callback_query: types.CallbackQuery, state: FSMC
         order_message += f"{dish_name}: {dish_price} грн\n"
     order_message += f"\nЗагальна сума: {total_sum} грн"
 
-    await callback_query.message.answer(order_message)
+    # Створення клавіатури з кнопкою "Сплатити замовлення"
+    builder = InlineKeyboardBuilder()
+    builder.button(
+        text="Сплатити замовлення",
+        callback_data=MenuSelectionCallback(action="pay", id=order_id)
+    )
+    builder.button(
+        text="Повернутися до вибору страв",
+        callback_data=MenuSelectionCallback(action="back_to_menu")
+    )
+    builder.adjust(1)
+
+    # Надсилання повідомлення з кнопкою Сплатити замовлення
+    await callback_query.message.answer(order_message, reply_markup=builder.as_markup())
     await callback_query.answer()
+
+
+
+@router.callback_query(MenuSelectionCallback.filter(F.action == "pay"))
+async def handle_payment(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback, state: FSMContext):
+    """Обробляє оплату замовлення та видаляє його з бази даних"""
+    state_data = await state.get_data()
+    db = Database()
+
+    order_id = callback_data.id
+    if not order_id:
+        await callback_query.answer("Немає активних замовлень для цього столика.", show_alert=True)
+        return
+
+    # Видалення замовлення з бази даних
+    db.delete_order(order_id)
+
+    state_data.pop("order_id", None)
+    await state.update_data(state_data)
+
+    # Надсилання повідомлення про підтвердження оплати
+    await callback_query.message.answer("Замовлення сплачено!")
+    await callback_query.answer()
+
+
 
 
 @router.callback_query(MenuSelectionCallback.filter())
