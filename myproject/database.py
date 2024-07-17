@@ -1,5 +1,6 @@
 import sqlite3
 import json
+from datetime import datetime
 
 
 class Database():
@@ -12,7 +13,7 @@ class Database():
 
     def create_db(self):
 
-        # Створення таблиці "Меню" з новим стовпчиком для опису
+        # Створення таблиці "Меню"
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS Menu (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +28,8 @@ class Database():
         self.cursor.execute('''
         CREATE TABLE IF NOT EXISTS Tables (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            table_name TEXT NOT NULL
+            table_name TEXT NOT NULL,
+            is_occupied BOOLEAN NOT NULL DEFAULT 0
         )
         ''')
 
@@ -103,7 +105,8 @@ class Database():
 
     def get_dish_details(self, dish_id: int):
         # Виконання запиту
-        self.cursor.execute("SELECT dish_name, dish_price, description FROM Menu WHERE id = ?", (dish_id,))
+        self.cursor.execute("SELECT dish_name, dish_price, description FROM Menu WHERE id = ?",
+                            (dish_id,))
         result = self.cursor.fetchone()
 
         return result
@@ -115,6 +118,79 @@ class Database():
         rows = self.cursor.fetchall()
         return [row[0] for row in rows] # ['Закуски', 'Перші страви', 'Основні страви', 'Напої']
 
+    from datetime import datetime
+
+    def create_order(self, table_name: str):
+        """Створює нове замовлення"""
+
+        # Отримання table_id по table_name
+        self.cursor.execute("SELECT id FROM Tables WHERE table_name = ?",
+                            (table_name,))
+        table_id = self.cursor.fetchone()[0]
+
+        # Отримання поточної дати та часу
+        order_date_time = datetime.now().strftime("%d-%m-%Y %H:%M")
+
+        # Створення нового замовлення
+        self.cursor.execute("INSERT INTO Orders (table_id, order_date, total) VALUES (?, ?, ?)",
+                            (table_id, order_date_time, 0))
+        self.connection.commit()
+        return self.cursor.lastrowid
+
+    def get_order_by_table(self, table_name: str):
+        """Отримання існуючого замовлення для заданого столика"""
+        self.cursor.execute('''
+        SELECT id FROM Orders 
+        WHERE table_id = (SELECT id FROM Tables WHERE table_name = ?)
+        AND total = 0
+        ''', (table_name,))
+        result = self.cursor.fetchone()
+        return result[0] if result else None
+
+
+    def confirm_selected_dish(self, order_id: int, dish_id: int):
+        """Відправляє id страви та додає її в OrderMenu"""
+
+        # Додавання вибраної страви в OrderMenu
+        self.cursor.execute("INSERT INTO OrderMenu (order_id, menu_id) VALUES (?, ?)",
+                            (order_id, dish_id))
+
+        # Збереження змін
+        self.connection.commit()
+
+    def view_order(self, order_id: int):
+        """Виводе сформироване замовлення"""
+
+        # Виконання запиту для отримання страв замовлення
+        self.cursor.execute('''
+        SELECT Menu.dish_name, Menu.dish_price
+        FROM OrderMenu
+        JOIN Menu ON OrderMenu.menu_id = Menu.id
+        WHERE OrderMenu.order_id = ?
+        ''', (order_id,))
+
+        # Отримання результатів запиту
+        results = self.cursor.fetchall()
+
+        # Підрахунок загальної суми
+        total_sum = sum(dish_price for _, dish_price in results)
+
+        return results, total_sum
+
+
+    """def delete_order(self, order_id: int):
+        
+        self.cursor.execute("DELETE FROM Orders WHERE id = ?", (order_id,))
+        self.cursor.execute("DELETE FROM OrderMenu WHERE order_id = ?", (order_id,))
+        self.connection.commit()"""
+
+    def delete_order(self, order_id: int):
+        """Видаляє замовлення з бази даних"""
+        self.cursor.execute("DELETE FROM OrderMenu WHERE order_id = ?", (order_id,))
+        self.cursor.execute("DELETE FROM Orders WHERE id = ?", (order_id,))
+        self.connection.commit()
+
 
 
 Database().create_db()
+

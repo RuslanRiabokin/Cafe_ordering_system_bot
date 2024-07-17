@@ -13,7 +13,7 @@ from contextlib import suppress
 class MenuSelectionCallback(CallbackData, prefix="fabnum"):
     """Дає можливість вибрати з меню страви"""
     action: str
-    id: int
+    id: Optional[int] = None
 
 
 
@@ -29,7 +29,9 @@ def get_data_from_the_menu(category: str ):
             text=f"{dish_name} - {dish_price}",
             callback_data=MenuSelectionCallback(action="select", id=dish_id)
         )
-
+    builder.button(
+        text="🔍 Подивитись замовлення", callback_data=MenuSelectionCallback(action="occupied")
+    )
 
     # Выравниваем кнопки в ряд
     builder.adjust(1)
@@ -57,6 +59,9 @@ async def choice_of_dish(callback_query: types.CallbackQuery, callback_data: Men
     builder.button(
         text="Повернутися до вибору страв",
         callback_data=MenuSelectionCallback(action="back_to_menu", id=callback_data.id)
+    )
+    builder.button(
+        text="🔍 Подивитись замовлення", callback_data=MenuSelectionCallback(action="occupied" )
     )
     builder.adjust(2)
 
