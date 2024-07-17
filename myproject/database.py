@@ -65,7 +65,7 @@ class Database():
             if self.cursor.fetchone()[0] == 0:
                 self.cursor.execute('INSERT INTO Tables (table_name) VALUES (?)', (name,))
 
-        # Чтение данных из файла JSON и сохранение их в переменной menu_items
+        # Читання даних із файлу JSON та збереження їх у змінній menu_items
         json_file_path = 'menu_items.json'
 
         with open(json_file_path, 'r', encoding='utf-8') as f:
@@ -178,11 +178,6 @@ class Database():
         return results, total_sum
 
 
-    """def delete_order(self, order_id: int):
-        
-        self.cursor.execute("DELETE FROM Orders WHERE id = ?", (order_id,))
-        self.cursor.execute("DELETE FROM OrderMenu WHERE order_id = ?", (order_id,))
-        self.connection.commit()"""
 
     def delete_order(self, order_id: int):
         """Видаляє замовлення з бази даних"""
