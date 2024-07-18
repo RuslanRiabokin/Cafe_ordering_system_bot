@@ -185,6 +185,31 @@ class Database():
         self.cursor.execute("DELETE FROM Orders WHERE id = ?", (order_id,))
         self.connection.commit()
 
+    def table_free(self, table_name: str):
+        """Перевіряє стан столика та оновлює його"""
+        self.cursor.execute("SELECT is_occupied FROM Tables WHERE table_name = ?",
+                            (table_name,))
+        result = self.cursor.fetchone()
+
+        if result is None:
+            return {"status": "not_found", "message": f"Столик с именем {table_name} не найден."}
+
+        is_occupied = result[0]
+
+        if is_occupied == 0:
+            self.cursor.execute("UPDATE Tables SET is_occupied = 1 WHERE table_name = ?",
+                                (table_name,))
+            self.connection.commit()
+            return {"status": "free"}
+        else:
+            return {"status": "occupied", "message": f"{table_name} занят, виберіть другий стіл."}
+
+    def table_occupation(self, table_name: str):
+        """Скидає стан зайнятості столика на 0"""
+        self.cursor.execute("UPDATE Tables SET is_occupied = 0 WHERE table_name = ?",
+                            (table_name,))
+        self.connection.commit()
+        return f"{table_name} вільний."
 
 
 Database().create_db()

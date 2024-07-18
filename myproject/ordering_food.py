@@ -40,10 +40,24 @@ async def cmd_food(message: Message, state: FSMContext):
 
 @router.message(F.text.startswith("Стіл №"))
 async def table_selected(message: Message, state: FSMContext):
+    """Вибір столика, перевірка чі вільний"""
     table = message.text
-    await state.update_data(table_selected=table)
-    await message.answer(f"Вы выбрали {table}. Теперь можете выбрать вариант меню, введя команду /menu.")
-    await state.set_state(OrderFood.choosing_menu_names)
+    db = Database()
+
+    # Проверка состояния столика
+    status = db.table_free(table)
+
+    if status["status"] == "occupied":
+        # Якщо стіл вже зайнятий, вивести повідомлення
+        await message.answer(status["message"])
+    elif status["status"] == "not_found":
+        # Якщо не знайдено столика, вивести повідомлення
+        await message.answer(status["message"])
+    else:
+        # Якщо столик вільний і тепер помічений як зайнятий
+        await state.update_data(table_selected=table)
+        await message.answer(f"Ви вибрали {table}. Тепер можна обрати меню, ввівши команду /menu.")
+        await state.set_state(OrderFood.choosing_menu_names)
 
 
 @router.message(OrderFood.choosing_menu_names, F.text.in_(menu_names))
