@@ -202,7 +202,7 @@ class Database():
         result = self.cursor.fetchone()
 
         if result is None:
-            return {"status": "not_found", "message": f"Столик с именем {table_name} не найден."}
+            return {"status": "not_found", "message": f"Столик з іменем {table_name} не знайден."}
 
         is_occupied = result[0]
 
@@ -212,7 +212,7 @@ class Database():
             self.connection.commit()
             return {"status": "free"}
         else:
-            return {"status": "occupied", "message": f"{table_name} занят, виберіть другий стіл."}
+            return {"status": "occupied", "message": f"{table_name} занят, виберіть інший стіл."}
 
     def table_occupation(self, table_name: str):
         """Скидає стан зайнятості столика на 0"""
