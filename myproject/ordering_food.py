@@ -40,10 +40,24 @@ async def cmd_food(message: Message, state: FSMContext):
 
 @router.message(F.text.startswith("Стіл №"))
 async def table_selected(message: Message, state: FSMContext):
+    """Вибір столика, перевірка чі вільний"""
     table = message.text
-    await state.update_data(table_selected=table)
-    await message.answer(f"Вы выбрали {table}. Теперь можете выбрать вариант меню, введя команду /menu.")
-    await state.set_state(OrderFood.choosing_menu_names)
+    db = Database()
+
+    # Проверка состояния столика
+    status = db.table_free(table)
+
+    if status["status"] == "occupied":
+        # Якщо стіл вже зайнятий, вивести повідомлення
+        await message.answer(status["message"])
+    elif status["status"] == "not_found":
+        # Якщо не знайдено столика, вивести повідомлення
+        await message.answer(status["message"])
+    else:
+        # Якщо столик вільний і тепер помічений як зайнятий
+        await state.update_data(table_selected=table)
+        await message.answer(f"Ви вибрали {table}. Тепер можна обрати меню, ввівши команду /menu.")
+        await state.set_state(OrderFood.choosing_menu_names)
 
 
 @router.message(OrderFood.choosing_menu_names, F.text.in_(menu_names))
@@ -131,10 +145,9 @@ async def displays_formed_order(callback_query: types.CallbackQuery, state: FSMC
     await callback_query.answer()
 
 
-
 @router.callback_query(MenuSelectionCallback.filter(F.action == "pay"))
 async def handle_payment(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback, state: FSMContext):
-    """Обробляє оплату замовлення та видаляє його з бази даних"""
+    """Обробляє оплату замовлення та зберігає його в архів, після чого видаляє з бази даних"""
     state_data = await state.get_data()
     db = Database()
 
@@ -143,8 +156,20 @@ async def handle_payment(callback_query: types.CallbackQuery, callback_data: Men
         await callback_query.answer("Немає активних замовлень для цього столика.", show_alert=True)
         return
 
+    # Отримання імені столика зі стану
+    table_name = state_data.get("table_selected")
+
+    # Отримання деталей замовлення та загальної суми
+    order_details, total_sum = db.view_order(order_id)
+
+    # Збереження замовлення в архів
+    db.archive_order(order_id, total_sum)
+
     # Видалення замовлення з бази даних
     db.delete_order(order_id)
+
+    # Звільнення столика
+    db.table_occupation(table_name)
 
     state_data.pop("order_id", None)
     await state.update_data(state_data)
@@ -152,7 +177,6 @@ async def handle_payment(callback_query: types.CallbackQuery, callback_data: Men
     # Надсилання повідомлення про підтвердження оплати
     await callback_query.message.answer("Замовлення сплачено!")
     await callback_query.answer()
-
 
 
 

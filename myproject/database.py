@@ -54,6 +54,16 @@ class Database():
             FOREIGN KEY (menu_id) REFERENCES Menu(id)
         )
         ''')
+        # Створення таблиці архів замовлень
+        self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS OrdersArchive (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    table_id INTEGER NOT NULL,
+                    order_date TEXT NOT NULL,
+                    total REAL NOT NULL,
+                    FOREIGN KEY (table_id) REFERENCES Tables(id)
+                )
+                ''')
 
         # Збереження змін
         self.connection.commit()
@@ -65,7 +75,7 @@ class Database():
             if self.cursor.fetchone()[0] == 0:
                 self.cursor.execute('INSERT INTO Tables (table_name) VALUES (?)', (name,))
 
-        # Чтение данных из файла JSON и сохранение их в переменной menu_items
+        # Читання даних із файлу JSON та збереження їх у змінній menu_items
         json_file_path = 'menu_items.json'
 
         with open(json_file_path, 'r', encoding='utf-8') as f:
@@ -178,11 +188,6 @@ class Database():
         return results, total_sum
 
 
-    """def delete_order(self, order_id: int):
-        
-        self.cursor.execute("DELETE FROM Orders WHERE id = ?", (order_id,))
-        self.cursor.execute("DELETE FROM OrderMenu WHERE order_id = ?", (order_id,))
-        self.connection.commit()"""
 
     def delete_order(self, order_id: int):
         """Видаляє замовлення з бази даних"""
@@ -190,6 +195,48 @@ class Database():
         self.cursor.execute("DELETE FROM Orders WHERE id = ?", (order_id,))
         self.connection.commit()
 
+    def table_free(self, table_name: str):
+        """Перевіряє стан столика та оновлює його"""
+        self.cursor.execute("SELECT is_occupied FROM Tables WHERE table_name = ?",
+                            (table_name,))
+        result = self.cursor.fetchone()
+
+        if result is None:
+            return {"status": "not_found", "message": f"Столик з іменем {table_name} не знайден."}
+
+        is_occupied = result[0]
+
+        if is_occupied == 0:
+            self.cursor.execute("UPDATE Tables SET is_occupied = 1 WHERE table_name = ?",
+                                (table_name,))
+            self.connection.commit()
+            return {"status": "free"}
+        else:
+            return {"status": "occupied", "message": f"{table_name} занят, виберіть інший стіл."}
+
+    def table_occupation(self, table_name: str):
+        """Скидає стан зайнятості столика на 0"""
+        self.cursor.execute("UPDATE Tables SET is_occupied = 0 WHERE table_name = ?",
+                            (table_name,))
+        self.connection.commit()
+
+    def archive_order(self, order_id: int, total_sum: float):
+        """Зберігає замовлення в архів"""
+        # Отримання деталей замовлення з таблиці Orders
+        self.cursor.execute('SELECT table_id, order_date FROM Orders WHERE id = ?', (order_id,))
+        order_data = self.cursor.fetchone()
+
+        if not order_data:
+            return
+
+        table_id, order_date = order_data
+
+        # Вставка замовлення в таблицю OrdersArchive
+        self.cursor.execute(
+            'INSERT INTO OrdersArchive (table_id, order_date, total) VALUES (?, ?, ?)',
+            (table_id, order_date, total_sum)
+        )
+        self.connection.commit()
 
 
 Database().create_db()
