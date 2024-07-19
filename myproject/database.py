@@ -54,6 +54,16 @@ class Database():
             FOREIGN KEY (menu_id) REFERENCES Menu(id)
         )
         ''')
+        # Створення таблиці архів замовлень
+        self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS OrdersArchive (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    table_id INTEGER NOT NULL,
+                    order_date TEXT NOT NULL,
+                    total REAL NOT NULL,
+                    FOREIGN KEY (table_id) REFERENCES Tables(id)
+                )
+                ''')
 
         # Збереження змін
         self.connection.commit()
@@ -209,7 +219,24 @@ class Database():
         self.cursor.execute("UPDATE Tables SET is_occupied = 0 WHERE table_name = ?",
                             (table_name,))
         self.connection.commit()
-        return f"{table_name} вільний."
+
+    def archive_order(self, order_id: int, total_sum: float):
+        """Зберігає замовлення в архів"""
+        # Отримання деталей замовлення з таблиці Orders
+        self.cursor.execute('SELECT table_id, order_date FROM Orders WHERE id = ?', (order_id,))
+        order_data = self.cursor.fetchone()
+
+        if not order_data:
+            return
+
+        table_id, order_date = order_data
+
+        # Вставка замовлення в таблицю OrdersArchive
+        self.cursor.execute(
+            'INSERT INTO OrdersArchive (table_id, order_date, total) VALUES (?, ?, ?)',
+            (table_id, order_date, total_sum)
+        )
+        self.connection.commit()
 
 
 Database().create_db()

@@ -145,10 +145,9 @@ async def displays_formed_order(callback_query: types.CallbackQuery, state: FSMC
     await callback_query.answer()
 
 
-
 @router.callback_query(MenuSelectionCallback.filter(F.action == "pay"))
 async def handle_payment(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback, state: FSMContext):
-    """Обробляє оплату замовлення та видаляє його з бази даних"""
+    """Обробляє оплату замовлення та зберігає його в архів, після чого видаляє з бази даних"""
     state_data = await state.get_data()
     db = Database()
 
@@ -157,8 +156,20 @@ async def handle_payment(callback_query: types.CallbackQuery, callback_data: Men
         await callback_query.answer("Немає активних замовлень для цього столика.", show_alert=True)
         return
 
+    # Отримання імені столика зі стану
+    table_name = state_data.get("table_selected")
+
+    # Отримання деталей замовлення та загальної суми
+    order_details, total_sum = db.view_order(order_id)
+
+    # Збереження замовлення в архів
+    db.archive_order(order_id, total_sum)
+
     # Видалення замовлення з бази даних
     db.delete_order(order_id)
+
+    # Звільнення столика
+    db.table_occupation(table_name)
 
     state_data.pop("order_id", None)
     await state.update_data(state_data)
@@ -166,7 +177,6 @@ async def handle_payment(callback_query: types.CallbackQuery, callback_data: Men
     # Надсилання повідомлення про підтвердження оплати
     await callback_query.message.answer("Замовлення сплачено!")
     await callback_query.answer()
-
 
 
 
