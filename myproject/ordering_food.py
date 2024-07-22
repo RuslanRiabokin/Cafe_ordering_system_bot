@@ -176,6 +176,7 @@ async def handle_payment(callback_query: types.CallbackQuery, callback_data: Men
 
     # Надсилання повідомлення про підтвердження оплати
     await callback_query.message.answer("Замовлення сплачено!")
+    await callback_query.message.answer("Для створення нового замовлення введіть (/start)")
     await callback_query.answer()
 
 
