@@ -94,7 +94,10 @@ class Database():
             for item in menu_items if item['dish_name'] not in existing_dishes
         ]
         if new_dishes:
-            self.cursor.executemany('INSERT INTO Menu (dish_name, dish_price, category, description) VALUES (?, ?, ?, ?)', new_dishes)
+            self.cursor.executemany(
+                'INSERT INTO Menu (dish_name, dish_price, '
+                'category, description) VALUES (?, ?, ?, ?)', new_dishes
+            )
 
         # Збереження змін
         self.connection.commit()
@@ -102,14 +105,13 @@ class Database():
     def get_table_names(self):
         """Отримуємо дані з Tables з столбця table_name"""
         self.cursor.execute("SELECT table_name FROM Tables")
-        rows = self.cursor.fetchall() # Отримання всіх рядків результату запиту
+        rows = self.cursor.fetchall()  # Отримання всіх рядків результату запиту
         return [row[0] for row in rows]
-
 
     def getting_data_from_menu(self, category):
         """Отримуємо дані з Menu з столбця dish_name"""
-
-        self.cursor.execute("SELECT id, dish_name, dish_price FROM Menu WHERE category = ?", (category,))
+        self.cursor.execute("SELECT id, dish_name, dish_price FROM Menu WHERE category = ?",
+                            (category,))
         rows = self.cursor.fetchall()
         return rows
 
@@ -121,12 +123,11 @@ class Database():
 
         return result
 
-
     def get_name_menu_categories(self):
         """Отримуємо з таблиці Menu назву категорій"""
         self.cursor.execute("SELECT DISTINCT category FROM Menu")
         rows = self.cursor.fetchall()
-        return [row[0] for row in rows] # ['Закуски', 'Перші страви', 'Основні страви', 'Напої']
+        return [row[0] for row in rows]  # ['Закуски', 'Перші страви', 'Основні страви', 'Напої']
 
     from datetime import datetime
 
@@ -150,21 +151,18 @@ class Database():
     def get_order_by_table(self, table_name: str):
         """Отримання існуючого замовлення для заданого столика"""
         self.cursor.execute('''
-        SELECT id FROM Orders 
+        SELECT id FROM Orders
         WHERE table_id = (SELECT id FROM Tables WHERE table_name = ?)
         AND total = 0
         ''', (table_name,))
         result = self.cursor.fetchone()
         return result[0] if result else None
 
-
     def confirm_selected_dish(self, order_id: int, dish_id: int):
         """Відправляє id страви та додає її в OrderMenu"""
-
         # Додавання вибраної страви в OrderMenu
         self.cursor.execute("INSERT INTO OrderMenu (order_id, menu_id) VALUES (?, ?)",
                             (order_id, dish_id))
-
         # Збереження змін
         self.connection.commit()
 
@@ -186,8 +184,6 @@ class Database():
         total_sum = sum(dish_price for _, dish_price in results)
 
         return results, total_sum
-
-
 
     def delete_order(self, order_id: int):
         """Видаляє замовлення з бази даних"""
@@ -216,14 +212,19 @@ class Database():
 
     def table_occupation(self, table_name: str):
         """Скидає стан зайнятості столика на 0"""
-        self.cursor.execute("UPDATE Tables SET is_occupied = 0 WHERE table_name = ?",
-                            (table_name,))
+        self.cursor.execute(
+            "UPDATE Tables SET is_occupied = 0 WHERE table_name = ?",
+            (table_name,)
+        )
         self.connection.commit()
 
     def archive_order(self, order_id: int, total_sum: float):
         """Зберігає замовлення в архів"""
         # Отримання деталей замовлення з таблиці Orders
-        self.cursor.execute('SELECT table_id, order_date FROM Orders WHERE id = ?', (order_id,))
+        self.cursor.execute(
+            'SELECT table_id, order_date FROM Orders WHERE id = ?',
+            (order_id,)
+        )
         order_data = self.cursor.fetchone()
 
         if not order_data:
@@ -240,4 +241,3 @@ class Database():
 
 
 Database().create_db()
-
