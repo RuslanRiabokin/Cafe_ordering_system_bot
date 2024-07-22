@@ -6,7 +6,8 @@ from aiogram.types import Message
 from myproject.simple_row import make_row_keyboard
 from myproject.common import cmd_start
 from myproject.database import Database
-from myproject.menu_selection_callback import update_category_menu_fab, choice_of_dish, MenuSelectionCallback
+from myproject.menu_selection_callback import (update_category_menu_fab, choice_of_dish,
+                                               MenuSelectionCallback)
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 
@@ -15,12 +16,10 @@ router = Router()
 menu_names = Database().get_name_menu_categories()
 
 
-
 class OrderFood(StatesGroup):
     """Замовлення їжі"""
     choosing_menu_names = State()
     choosing_menu_types = State()
-
 
 
 @router.message(Command("menu"))
@@ -67,7 +66,6 @@ async def display_menu_by_category(message: Message, state: FSMContext):
     await state.update_data(state_data)
     user_choice = message.text  # Отримуємо вибір користувача з тексту повідомлення
     await update_category_menu_fab(message, user_choice)
-
 
 
 @router.callback_query(MenuSelectionCallback.filter(F.action == "back_to_menu"))
@@ -146,14 +144,17 @@ async def displays_formed_order(callback_query: types.CallbackQuery, state: FSMC
 
 
 @router.callback_query(MenuSelectionCallback.filter(F.action == "pay"))
-async def handle_payment(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback, state: FSMContext):
+async def handle_payment(callback_query: types.CallbackQuery,
+                         callback_data: MenuSelectionCallback,
+                         state: FSMContext):
     """Обробляє оплату замовлення та зберігає його в архів, після чого видаляє з бази даних"""
     state_data = await state.get_data()
     db = Database()
 
     order_id = callback_data.id
     if not order_id:
-        await callback_query.answer("Немає активних замовлень для цього столика.", show_alert=True)
+        await callback_query.answer("Немає активних замовлень для цього столика.",
+                                    show_alert=True)
         return
 
     # Отримання імені столика зі стану
@@ -180,15 +181,24 @@ async def handle_payment(callback_query: types.CallbackQuery, callback_data: Men
     await callback_query.answer()
 
 
-
 @router.callback_query(MenuSelectionCallback.filter())
-async def handle_dish_callback(callback_query: types.CallbackQuery, callback_data: MenuSelectionCallback, state: FSMContext):
-    state_data = await state.get_data()
+async def handle_dish_callback(
+        callback_query: types.CallbackQuery,
+        callback_data: MenuSelectionCallback,
+        state: FSMContext
+):
     await choice_of_dish(callback_query, callback_data)
 
 
 @router.message()
 async def echo(message: types.Message):
-    """Обработчик всех остальных сообщений. Отправляет эхо-ответ с именем и ID пользователя."""
-    await message.answer(f'Привет, {message.from_user.first_name}, твой номер id: {message.from_user.id}')
-    await message.answer(f'Привет, введите команду (/start)')
+    """
+    Обробник решти повідомлень. Відправляє луна-відповідь з ім'ям та ID користувача.
+    """
+    await message.answer(
+        f'Привіт, {message.from_user.first_name},'
+        f' твой номер id: {message.from_user.id}'
+        )
+    await message.answer(
+        'Привіт, це бот для вибору столу та меню.\n Щоб почати введіть(/start)'
+    )
