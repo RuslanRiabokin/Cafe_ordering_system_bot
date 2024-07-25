@@ -104,7 +104,7 @@ class Database():
 
     def get_table_names(self):
         """Отримуємо дані з Tables з столбця table_name"""
-        self.cursor.execute("SELECT table_name FROM Tables")
+        self.cursor.execute("SELECT table_name FROM Tables WHERE is_occupied = 0")
         rows = self.cursor.fetchall()  # Отримання всіх рядків результату запиту
         return [row[0] for row in rows]
 

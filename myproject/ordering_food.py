@@ -200,5 +200,5 @@ async def echo(message: types.Message):
         f' твой номер id: {message.from_user.id}'
         )
     await message.answer(
-        'Привіт, це бот для вибору столу та меню.\n Щоб почати введіть(/start)'
+        f'Привіт {message.from_user.first_name}, це бот для вибору столу та меню.\n Щоб почати введіть(/start)'
     )
