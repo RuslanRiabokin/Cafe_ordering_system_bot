@@ -44,7 +44,7 @@ async def table_selected(message: Message, state: FSMContext):
     db = Database()
 
     # Проверка состояния столика
-    status = db.table_free(table)
+    status = db.table_occupation(table)
 
     if status["status"] == "occupied":
         # Якщо стіл вже зайнятий, вивести повідомлення
@@ -170,7 +170,7 @@ async def handle_payment(callback_query: types.CallbackQuery,
     db.delete_order(order_id)
 
     # Звільнення столика
-    db.table_occupation(table_name)
+    db.table_free(table_name)
 
     state_data.pop("order_id", None)
     await state.update_data(state_data)

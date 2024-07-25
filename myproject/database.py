@@ -191,7 +191,7 @@ class Database():
         self.cursor.execute("DELETE FROM Orders WHERE id = ?", (order_id,))
         self.connection.commit()
 
-    def table_free(self, table_name: str):
+    def table_occupation(self, table_name: str):
         """Перевіряє стан столика та оновлює його"""
         self.cursor.execute("SELECT is_occupied FROM Tables WHERE table_name = ?",
                             (table_name,))
@@ -210,7 +210,7 @@ class Database():
         else:
             return {"status": "occupied", "message": f"{table_name} занят, виберіть інший стіл."}
 
-    def table_occupation(self, table_name: str):
+    def table_free(self, table_name: str):
         """Скидає стан зайнятості столика на 0"""
         self.cursor.execute(
             "UPDATE Tables SET is_occupied = 0 WHERE table_name = ?",
