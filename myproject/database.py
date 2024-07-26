@@ -1,6 +1,7 @@
 import sqlite3
 import json
 from datetime import datetime
+from myproject.exceptions import TableNotFoundException, TableOccupiedException
 
 
 class Database():
@@ -193,22 +194,27 @@ class Database():
 
     def table_occupation(self, table_name: str):
         """Перевіряє стан столика та оновлює його"""
-        self.cursor.execute("SELECT is_occupied FROM Tables WHERE table_name = ?",
-                            (table_name,))
-        result = self.cursor.fetchone()
-
-        if result is None:
-            return {"status": "not_found", "message": f"Столик з іменем {table_name} не знайден."}
-
-        is_occupied = result[0]
-
-        if is_occupied == 0:
-            self.cursor.execute("UPDATE Tables SET is_occupied = 1 WHERE table_name = ?",
+        try:
+            self.cursor.execute("SELECT is_occupied FROM Tables WHERE table_name = ?",
                                 (table_name,))
-            self.connection.commit()
-            return {"status": "free"}
-        else:
-            return {"status": "occupied", "message": f"{table_name} занят, виберіть інший стіл."}
+            result = self.cursor.fetchone()
+
+            if result is None:
+                raise TableNotFoundException
+
+            is_occupied = result[0]
+
+            if is_occupied == 0:
+                self.cursor.execute("UPDATE Tables SET is_occupied = 1 WHERE table_name = ?",
+                                    (table_name,))
+                self.connection.commit()
+                return "free"
+            else:
+                raise TableOccupiedException
+        except TableNotFoundException:
+            return "not_found"
+        except TableOccupiedException:
+            return "table_occupied"
 
     def table_free(self, table_name: str):
         """Скидає стан зайнятості столика на 0"""
