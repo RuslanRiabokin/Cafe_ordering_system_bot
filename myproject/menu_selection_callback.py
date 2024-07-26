@@ -5,18 +5,13 @@ from typing import Optional
 from aiogram import types
 
 
-
-
-
 class MenuSelectionCallback(CallbackData, prefix="fabnum"):
     """Дає можливість вибрати з меню страви"""
     action: str
     id: Optional[int] = None
 
 
-
-
-def get_data_from_the_menu(category: str ):
+def get_data_from_the_menu(category: str):
     # Отримуємо дані з бази даних
     results = Database().getting_data_from_menu(category)
 
@@ -40,7 +35,7 @@ def get_data_from_the_menu(category: str ):
 async def update_category_menu_fab(message: types.Message, category: str):
     """Виводе меню по обраній категорії"""
     await message.answer(
-        f"Оберіть блюдо:",
+        "Оберіть блюдо:",
         reply_markup=get_data_from_the_menu(category)
     )
 
@@ -52,14 +47,15 @@ async def choice_of_dish(callback_query: types.CallbackQuery, callback_data: Men
     # Створюємо клавіатуру з кнопками "Підтвердити" та "Повернутися до вибору страв"
     builder = InlineKeyboardBuilder()
     builder.button(
-        text="Підтвердити", callback_data=MenuSelectionCallback(action="confirm", id=callback_data.id)
+        text="Підтвердити", callback_data=MenuSelectionCallback(action="confirm",
+                                                                id=callback_data.id)
     )
     builder.button(
         text="Повернутися до вибору страв",
         callback_data=MenuSelectionCallback(action="back_to_menu", id=callback_data.id)
     )
     builder.button(
-        text="🔍 Подивитись замовлення", callback_data=MenuSelectionCallback(action="occupied" )
+        text="🔍 Подивитись замовлення", callback_data=MenuSelectionCallback(action="occupied")
     )
     builder.adjust(2)
 

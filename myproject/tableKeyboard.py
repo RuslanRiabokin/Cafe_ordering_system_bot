@@ -23,5 +23,3 @@ class TableKeyboard():
             resize_keyboard=True
         )
         return builder
-
-

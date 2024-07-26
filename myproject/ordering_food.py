@@ -46,18 +46,17 @@ async def table_selected(message: Message, state: FSMContext):
     # Проверка состояния столика
     status = db.table_occupation(table)
 
-    if status["status"] == "occupied":
+    if status == "table_occupied":
         # Якщо стіл вже зайнятий, вивести повідомлення
-        await message.answer(status["message"])
-    elif status["status"] == "not_found":
+        await message.answer("Стіл вже зайнятий")
+    elif status == "not_found":
         # Якщо не знайдено столика, вивести повідомлення
-        await message.answer(status["message"])
+        await message.answer("Стіл не знайдено")
     else:
         # Якщо столик вільний і тепер помічений як зайнятий
         await state.update_data(table_selected=table)
         await message.answer(f"Ви вибрали {table}. Тепер можна обрати меню, ввівши команду /menu.")
         await state.set_state(OrderFood.choosing_menu_names)
-
 
 @router.message(OrderFood.choosing_menu_names, F.text.in_(menu_names))
 async def display_menu_by_category(message: Message, state: FSMContext):
@@ -200,5 +199,5 @@ async def echo(message: types.Message):
         f' твой номер id: {message.from_user.id}'
         )
     await message.answer(
-        'Привіт, це бот для вибору столу та меню.\n Щоб почати введіть(/start)'
+        f'Привіт {message.from_user.first_name}, це бот для вибору столу та меню.\n Щоб почати введіть(/start)'
     )

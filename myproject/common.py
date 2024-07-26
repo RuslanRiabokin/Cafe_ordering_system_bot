@@ -11,6 +11,7 @@ router = Router()
 # Ініціалізуємо об'єкт класу з зазначенням шляху до бази даних
 table_keyboard = TableKeyboard()
 
+
 @router.message(Command(commands=["start"]))
 async def cmd_start(message: types.Message, state: FSMContext):
     """Функція для вибору столиків"""
@@ -19,7 +20,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
     # Створюємо клавіатуру з кнопками вибору столиків
     keyboard = table_keyboard.create_keyboard(table_names=Database().get_table_names())
 
-
     # Надсилаємо повідомлення з клавіатурою
     await message.answer(
         text="Виберіть столик, натиснувши на кнопку з номером столика",
@@ -27,15 +27,6 @@ async def cmd_start(message: types.Message, state: FSMContext):
     )
 
 
-
-
-
-
-
-# Не важко здогадатися, що наступні два хендлери можна
-# спокійно об'єднати в один, але для повноти картини залишимо так
-
-# default_state - це те ж саме, що і StateFilter(None)
 @router.message(StateFilter(None), Command(commands=["cancel"]))
 @router.message(default_state, F.text.lower() == "відміна")
 async def cmd_cancel_no_state(message: Message, state: FSMContext):
