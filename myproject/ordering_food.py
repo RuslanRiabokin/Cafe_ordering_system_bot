@@ -2,7 +2,7 @@ from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardRemove
 from myproject.simple_row import make_row_keyboard
 from myproject.common import cmd_start
 from myproject.database import Database
@@ -52,7 +52,8 @@ async def table_selected(message: Message, state: FSMContext):
             # Якщо столик вільний і тепер помічений як зайнятий
             await state.update_data(table_selected=table)
             await message.answer(f"Ви вибрали {table}. "
-                                 f"Тепер можна обрати меню, ввівши команду /menu.")
+                                 f"Тепер можна обрати меню, ввівши команду /menu.",
+                                 reply_markup=ReplyKeyboardRemove())
             await state.set_state(OrderFood.choosing_menu_names)
 
     except TableNotFoundException:
