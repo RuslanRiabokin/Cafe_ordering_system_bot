@@ -9,6 +9,7 @@ from myproject.database import Database
 from myproject.menu_selection_callback import (update_category_menu_fab, choice_of_dish,
                                                MenuSelectionCallback)
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+from myproject.exceptions import TableNotFoundException, TableOccupiedException
 
 
 router = Router()
@@ -43,20 +44,22 @@ async def table_selected(message: Message, state: FSMContext):
     table = message.text
     db = Database()
 
-    # Проверка состояния столика
-    status = db.table_occupation(table)
+    try:
+        # Проверка состояния столика
+        status = db.table_occupation(table)
 
-    if status == "table_occupied":
-        # Якщо стіл вже зайнятий, вивести повідомлення
-        await message.answer("Стіл вже зайнятий")
-    elif status == "not_found":
+        if status == "free":
+            # Якщо столик вільний і тепер помічений як зайнятий
+            await state.update_data(table_selected=table)
+            await message.answer(f"Ви вибрали {table}. Тепер можна обрати меню, ввівши команду /menu.")
+            await state.set_state(OrderFood.choosing_menu_names)
+
+    except TableNotFoundException:
         # Якщо не знайдено столика, вивести повідомлення
         await message.answer("Стіл не знайдено")
-    else:
-        # Якщо столик вільний і тепер помічений як зайнятий
-        await state.update_data(table_selected=table)
-        await message.answer(f"Ви вибрали {table}. Тепер можна обрати меню, ввівши команду /menu.")
-        await state.set_state(OrderFood.choosing_menu_names)
+    except TableOccupiedException:
+        # Якщо стіл вже зайнятий, вивести повідомлення
+        await message.answer("Стіл вже зайнятий")
 
 @router.message(OrderFood.choosing_menu_names, F.text.in_(menu_names))
 async def display_menu_by_category(message: Message, state: FSMContext):

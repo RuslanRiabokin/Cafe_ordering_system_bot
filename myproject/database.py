@@ -194,27 +194,22 @@ class Database():
 
     def table_occupation(self, table_name: str):
         """Перевіряє стан столика та оновлює його"""
-        try:
-            self.cursor.execute("SELECT is_occupied FROM Tables WHERE table_name = ?",
+        self.cursor.execute("SELECT is_occupied FROM Tables WHERE table_name = ?",
+                            (table_name,))
+        result = self.cursor.fetchone()
+
+        if result is None:
+            raise TableNotFoundException
+
+        is_occupied = result[0]
+
+        if is_occupied == 0:
+            self.cursor.execute("UPDATE Tables SET is_occupied = 1 WHERE table_name = ?",
                                 (table_name,))
-            result = self.cursor.fetchone()
-
-            if result is None:
-                raise TableNotFoundException
-
-            is_occupied = result[0]
-
-            if is_occupied == 0:
-                self.cursor.execute("UPDATE Tables SET is_occupied = 1 WHERE table_name = ?",
-                                    (table_name,))
-                self.connection.commit()
-                return "free"
-            else:
-                raise TableOccupiedException
-        except TableNotFoundException:
-            return "not_found"
-        except TableOccupiedException:
-            return "table_occupied"
+            self.connection.commit()
+            return "free"
+        else:
+            raise TableOccupiedException
 
     def table_free(self, table_name: str):
         """Скидає стан зайнятості столика на 0"""
