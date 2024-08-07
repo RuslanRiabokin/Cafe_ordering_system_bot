@@ -1,57 +1,51 @@
 import os
 import pytest
-import sqlite3
-
-from Education.create_order import cursor
+from myproject.exceptions import TableNotFoundException, TableOccupiedException
 
 
 def test_database_file_exists(db_conn):
-    """Проверяем, что файл базы данных был создан"""
-    assert os.path.exists("database_test.db"), "Файл базы данных не был создан."
+    """Перевіряємо, що файл бази даних було створено"""
+    assert os.path.exists("database_test.db"), "Файл бази даних не було створено."
 
 
 def test_free_tables_count(db_conn):
-    """Проверяем количество свободных столиков"""
+    """Перевіряємо кількість вільних столиків"""
     free_tables = db_conn.get_table_names()
-    assert len(free_tables) == 9, f"Ожидалось 9 свободных столиков, но найдено {len(free_tables)}."
+    assert len(free_tables) == 9, \
+        f"Очікувалось 9 вільних столиків, але знайдено {len(free_tables)}."
 
 
-def test_table_occupied(db_conn):
-    """Проверяем, что количество свободных столиков становится 8 после занятия одного столика"""
-    # Обновляем статус столика "Стіл № 9" на занятый
-    db_conn.cursor.execute(
-        "UPDATE Tables SET is_occupied = 1 WHERE table_name = 'Стіл № 9'"
-    )
-    db_conn.connection.commit()
-
-    free_tables_after = db_conn.get_table_names()
-    free_count_after = len(free_tables_after)
-
-    assert free_count_after == 8, (
-        f"Ожидалось 8 свободных столиков, но найдено {free_count_after}."
-    )
-    db_conn.cursor.execute(
-        "UPDATE Tables SET is_occupied = 0 WHERE table_name = 'Стіл № 9'"
-    )
-    db_conn.connection.commit()
+def test_table_not_found(db_conn):
+    """Перевірка, що викликається виняток, якщо столик не знайдено"""
+    with pytest.raises(TableNotFoundException):
+        db_conn.table_occupation("Неіснуючий столик")
 
 
-def test_table_does_not_exist(db_conn):
-    """Проверка что такогй стол не существует"""
-    db_conn.cursor.execute(
-        "SELECT * FROM Tables WHERE table_name = 'Стіл № 19'"
-    )
-    result = db_conn.cursor.fetchone()
-    assert result is None, "Ошибка: Такой стол есть."
+def test_table_free_occupied(db_conn):
+    """Перевірка, що вільний столик оновлюється на зайнятий"""
+    table_name = db_conn.get_table_names()[0]
+    result = db_conn.table_occupation(table_name)
+    assert result == "free", "Очікувалося, що столик буде вільним і його стан оновиться"
+    with pytest.raises(TableOccupiedException):
+        db_conn.table_occupation(table_name)
 
 
-def test_table_error_nu(db_conn):
-    """Проверка, что ошибка возникает при попытке получить несуществующий столик"""
-    with pytest.raises(sqlite3.DatabaseError) as excinfo:
-        db_conn.cursor.execute(
-            "SELECT * FROM Tables WHERE table_name = 'Стіл № 19'"
-        )
-        result = db_conn.cursor.fetchone()
-        if result is None:
-            # Эмулируем ошибку, если столик не найден
-            raise sqlite3.DatabaseError("Столик не найден")
+def test_table_already_occupied(db_conn):
+    """Перевірка, що викликається виняток, якщо столик вже зайнятий"""
+    table_name = db_conn.get_table_names()[0]
+    db_conn.table_occupation(table_name)
+    with pytest.raises(TableOccupiedException):
+        db_conn.table_occupation(table_name)
+
+
+def test_unique_menu_data(db_conn):
+    """Перевірка, що дані в таблиці Menu унікальні та не дублюються"""
+    query = """
+        SELECT dish_name, COUNT(*)
+        FROM Menu
+        GROUP BY dish_name
+        HAVING COUNT(*) > 1
+    """
+    db_conn.cursor.execute(query)
+    duplicates = db_conn.cursor.fetchall()
+    assert len(duplicates) == 0, f"У таблиці Menu є страви, що дублюються: {duplicates}"
