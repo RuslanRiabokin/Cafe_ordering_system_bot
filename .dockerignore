@@ -1,1 +1,14 @@
+# Исключаем стандартные директории и файлы, которые обычно не нужны в контейнере
+.git
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
 .env
+.vscode
+.idea
+*.log
+*.bak
+*.swp
+create_docker.txt
