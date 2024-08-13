@@ -25,6 +25,9 @@ WORKDIR /app
 # Установим PYTHONPATH
 ENV PYTHONPATH="/app"
 
+# Установим и запустим линтер flake8
+RUN python -m pip install flake8
+RUN python -m flake8 myproject
 
 # Запустим тесты
 RUN python -m pytest -v tests/test_tables.py
