@@ -6,9 +6,9 @@ from myproject.exceptions import TableNotFoundException, TableOccupiedException
 
 class Database():
 
-    def __init__(self, db_name = 'database.db'):
+    def __init__(self, db_name='database.db'):
         self.connection = sqlite3.connect(db_name)
-        self.connection.execute('PRAGMA foreign_keys = 1')
+        self.connection.execute('PRAGMA foreign_keys=1')
         self.connection.commit()
         self.cursor = self.connection.cursor()
 

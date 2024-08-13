@@ -9,6 +9,7 @@ from myproject import common, ordering_food
 # Загружаем переменные окружения из файла .env
 load_dotenv()
 
+
 async def main():
     logging.basicConfig(
         level=logging.INFO,
