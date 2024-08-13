@@ -27,7 +27,7 @@ ENV PYTHONPATH="/app"
 
 
 # Запустим тесты
-# RUN pip install pytest && python -m pytest -v tests/test_tables.py
+RUN python -m pytest -v tests/test_tables.py
 
 # Второй этап: Минимальный образ для запуска бота
 FROM python:3.11.9-slim-bullseye AS final
